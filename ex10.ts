@@ -76,8 +76,16 @@ export type ApiResponse<T> =
       error: string;
     };
 
-export function promisify(arg: unknown): unknown {
-  return null;
+export function promisify<T>(
+  func: (cb: (response: ApiResponse<T>) => void) => void
+): () => Promise<T> {
+  return (): Promise<T> =>
+    new Promise<T>((resolve, reject) => {
+      func((response: ApiResponse<T>) => {
+        if (response.status === "success") resolve(response.data);
+        else reject(response.error);
+      });
+    });
 }
 
 const oldApi = {
